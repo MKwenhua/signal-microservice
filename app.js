@@ -24,38 +24,22 @@ redisShare.on('connect',  (err) => {
  });
     
 
-let server = http.createServer( (req, res) => {
-  let url = req.url;
-  console.log('url', url);
-  if (url == '/') {
-    url += 'index.html';
-  }
 
-  if (url == '/health') {
-    res.writeHead(200);
-    res.end();
-  } else if (url == '/info/gen' || url == '/info/poll') {
-    res.setHeader('Content-Type', 'application/json');
+app.get('/health', (req, res) => {
+
+  res.writeHead(200);
+  res.end();
+});
+app.get(/\/info\/(gen|poll)/, (req,res) => {
+    let url = req.url;
+	  res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache, no-store');
     res.end(JSON.stringify(sysInfo[url.slice(6)]()));
-  } else {
-    fs.readFile('./static' + url, (err, data) => {
-      if (err) {
-        res.writeHead(404);
-        res.end('Not found');
-      } else {
-        let ext = path.extname(url).slice(1);
-        res.setHeader('Content-Type', contentTypes[ext]);
-        if (ext === 'html') {
-          res.setHeader('Cache-Control', 'no-cache, no-store');
-        }
-        res.end(data);
-      }
-    });
-  }
 });
-
-server.listen(env.NODE_PORT || 8443, env.NODE_IP || '127.0.0.1', () => {
+app.get('/', (req, res) => { 
+    res.send("How's it going?");
+});
+let server = app.listen(env.NODE_PORT || 8443, env.NODE_IP || 'localhost', () => {
   console.log(`Application worker ${process.pid} started...`);
 });
 
